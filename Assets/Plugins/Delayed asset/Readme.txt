@@ -7,7 +7,7 @@ Plugin for Unity that allows to set assets (prefabs, materials, etc.) to fields 
 Usage
 -----
 
-*   Inside a script, instead of creating a field using the normal type for the asset (GameObject, Transform, etc., or a custom script), create a field of type DelayedAsset. In the inspector it will be possible to directly assign the original asset to the slot. Example:
+*   Inside a script, instead of creating a field using the normal type for the asset (GameObject, Transform, etc., or a custom component), create a field of type DelayedAsset. In the inspector it will be possible to directly assign the original asset to the slot. Example:
 
         [SerializeField] DelayedAsset thing;
         public DelayedAsset AnotherThing;
