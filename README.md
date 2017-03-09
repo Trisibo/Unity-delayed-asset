@@ -43,7 +43,7 @@ Usage
 
 
 
-*   To actually load the original asset when needed, "DelayedAsset" contains the method "Load()"; it will return null if the asset cannot be found (or if none was assigned). The type returned is "UnityEngine.Object", so it may be necessary to perform a cast to the actual type of the asset. The asset can be unloaded using Unity's built-in "Resources.Unload()". Example:
+*   To actually load the original asset when needed, "DelayedAsset" contains the methods "Load" and "LoadAsync"; they will return null if the asset cannot be found (or if none was assigned). The type returned by "Load" is "UnityEngine.Object", so it may be necessary to perform a cast to the actual type of the asset. The asset can be unloaded using Unity's built-in "Resources.Unload". Example:
 
         [SerializeField] [DelayedAssetType(typeof(Transform))] DelayedAsset transformReference;
 

@@ -55,7 +55,7 @@ public class DelayedAsset : ISerializationCallbackReceiver
     /// <summary>
     /// Loads the original asset.
     /// </summary>
-    /// <returns>The loaded asset, or null if it wasn't found.</returns>
+    /// <returns>The loaded asset, or null if it wasn't found or hadn't been assigned.</returns>
 
     public UnityEngine.Object Load()
     {
@@ -63,6 +63,26 @@ public class DelayedAsset : ISerializationCallbackReceiver
             return null;
 
         return Resources.Load(assetRelativePath, assetType);
+    }
+
+
+
+
+
+
+
+
+    /// <summary>
+    /// Asynchronously loads the original asset.
+    /// </summary>
+    /// <returns>A <see cref="ResourceRequest"/> object, from which the asset can be retrieved once the operation is completed. Will be null if the original asset couldn't be found, or hadn't been assigned.</returns>
+
+    public ResourceRequest LoadAsync()
+    {
+        if (string.IsNullOrEmpty(assetRelativePath))
+            return null;
+
+        return Resources.LoadAsync(assetRelativePath, assetType);
     }
 
 
