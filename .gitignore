@@ -33,3 +33,4 @@ sysinfo.txt
 # Unity stuff not needed for this repository
 /ProjectSettings/
 *.meta
+/[Aa]ssets/[Tt]est/
