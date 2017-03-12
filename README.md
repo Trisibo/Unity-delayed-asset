@@ -17,7 +17,7 @@ Usage
         [SerializeField] DelayedAsset[] manyThings;
         public DelayedAsset[] EvenMoreThings;
 
-    In the inspector, the labels for delayed assets will be shown between brackets, to better identify them; from the previous examples, the field "thing" will appear as "[Thing]", and "EvenMoreThings" as "[EvenMoreThings]".
+    In the inspector, the labels for delayed assets will be shown between curly braces, to better identify them; from the previous examples, the field "thing" will appear as "{Thing}", and "EvenMoreThings" as "{EvenMoreThings}".
 
 
 

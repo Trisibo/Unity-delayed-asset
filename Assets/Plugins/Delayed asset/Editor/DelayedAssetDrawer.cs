@@ -53,7 +53,7 @@ public class DelayedAssetDrawer : PropertyDrawer
 
         // Draw the property:
         SerializedProperty assetProperty = property.FindPropertyRelative("asset");
-        label.text = "[" + label.text + "]";
+        label.text = "{" + label.text + "}";
 
         assetProperty.objectReferenceValue = EditorGUI.ObjectField(position, label, assetProperty.objectReferenceValue, desiredType, false);
 
