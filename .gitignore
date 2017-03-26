@@ -34,3 +34,6 @@ sysinfo.txt
 /ProjectSettings/
 *.meta
 /[Aa]ssets/[Tt]est/
+
+# Test builds
+/Builds/
