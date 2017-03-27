@@ -30,17 +30,212 @@ using System;
 [Serializable]
 public class DelayedAsset : ISerializationCallbackReceiver
 {
-    // The original asset, only available on the editor to be able to set it from the inspector:
+    #region Data
+
+
+    // The asset, only available on the editor to be able to set it from the inspector:
     #if UNITY_EDITOR
     [SerializeField] UnityEngine.Object asset;
     #endif
 
 
-    // The data needed to load the original asset:
+    // The data needed to load the asset:
     [SerializeField] string assetRelativePath;
     [SerializeField] string assetTypeString;
 
     Type assetType;
+
+
+    // The asset once loaded at runtime:
+    UnityEngine.Object _loadedAsset;
+    
+    UnityEngine.Object loadedAsset
+    {
+        get
+        {
+            if (_loadedAsset == null  &&  asyncLoadedAssetGetter != null)
+                _loadedAsset = asyncLoadedAssetGetter();
+            return _loadedAsset;
+        }
+
+        set
+        {
+            _loadedAsset = value;
+        }
+    }
+
+
+    // The async load request, if any:
+    AsyncLoadRequest asyncLoadRequest;
+    Func<UnityEngine.Object> asyncLoadedAssetGetter;
+
+
+    #endregion
+
+
+
+
+
+
+
+
+    #region Data types
+
+
+    /// <summary>
+    /// Represents an async request to load the original asset.
+    /// Behaves in a similar way to Unity's <see cref="ResourceRequest"/>.
+    /// </summary>
+
+    public class AsyncLoadRequest : CustomYieldInstruction
+    {
+        // The original resource request. Can be null if no resource request was done:
+        readonly ResourceRequest resourceRequest;
+
+
+        // The already loaded asset if there was no resource request, null otherwise:
+        readonly UnityEngine.Object assetIfNoResourceRequest;
+
+
+
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="resourceRequest">The resource request used to load the asset. Cannot be null; if no resource request was done, use the constructor that accepts an already loaded asset.</param>
+        /// <param name="actualLoadedAssetGetter">Receives a method that returns the loaded asset (not the original asset).</param>
+
+        public AsyncLoadRequest(ResourceRequest resourceRequest, out Func<UnityEngine.Object> actualLoadedAssetGetter)
+        {
+            this.resourceRequest = resourceRequest;
+            actualLoadedAssetGetter = GetActualLoadedAsset;
+        }
+
+
+
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="alreadyLoadedAsset">This must contain an already loaded asset. Use this constructor only if there was no resource request done.</param>
+        /// <param name="actualLoadedAssetGetter">Receives a method that returns the loaded asset (not the original asset).</param>
+
+        public AsyncLoadRequest(UnityEngine.Object alreadyLoadedAsset, out Func<UnityEngine.Object> actualLoadedAssetGetter)
+        {
+            assetIfNoResourceRequest = alreadyLoadedAsset;
+            actualLoadedAssetGetter = GetActualLoadedAsset;
+        }
+
+
+
+
+        /// <summary>
+        /// <para>Has the asset loading finished?</para>
+        /// <para>See <see cref="AsyncOperation.isDone"/> documentation for more details.</para>
+        /// </summary>
+
+        public bool IsDone
+        {
+            get
+            {
+                return resourceRequest != null  ?  resourceRequest.isDone  :  true; 
+            }
+        }
+
+
+
+
+        /// <summary>
+        /// <para>Allows tweaking the order in which async operations will be performed.</para>
+        /// <para>See <see cref="AsyncOperation.priority"/> documentation for more details.</para>
+        /// <para>If no actual loading was necessary, assigning a value will have no effect, and will always return -1.</para>
+        /// </summary>
+
+        public int Priority
+        {
+            get
+            {
+                return resourceRequest != null  ?  resourceRequest.priority  :  -1;
+            }
+
+            set
+            {
+                if (resourceRequest != null)
+                    resourceRequest.priority = value;
+            }
+        }
+
+
+
+
+        /// <summary>
+        /// <para>The progress of the operation.</para>
+        /// <para>See <see cref="AsyncOperation.progress"/> documentation for more details.</para>
+        /// </summary>
+
+        public float Progress
+        {
+            get
+            {
+                return resourceRequest != null  ?  resourceRequest.progress  :  1;
+            }
+        }
+
+
+
+
+        /// <summary>
+        /// <para>Asset object being loaded.</para>
+        /// <para>See <see cref="ResourceRequest.asset"/> documentation for more details. The difference is that trying to get the value before <see cref="IsDone"/> is true won't stall the loading process, but will cause an <see cref="InvalidOperationException"/>.</para>
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown if <see cref="IsDone"/> is false when trying to access the asset.</exception>
+
+        public UnityEngine.Object Asset
+        {
+            get
+            {
+                if (!IsDone)
+                    throw new InvalidOperationException("Tried to access the asset when IsDone was false");
+
+                return GetOriginalAsset(GetActualLoadedAsset());
+            }
+        }
+
+
+
+
+        /// <summary>
+        /// <see cref="CustomYieldInstruction.keepWaiting"/> implementation.
+        /// </summary>
+
+        public override bool keepWaiting
+        {
+            get
+            {
+                return !IsDone;
+            }
+        }
+
+
+
+
+        /// <summary>
+        /// Returns the loaded asset (which will be different to the original asset in case the loaded asset is a <see cref="DelayedAssetProxy"/>).
+        /// Will return null if <see cref="IsDone"/> is false.
+        /// </summary>
+        /// <returns>The loaded asset.</returns>
+
+        UnityEngine.Object GetActualLoadedAsset()
+        {
+            if (IsDone)
+                return resourceRequest != null  ?  resourceRequest.asset  :  assetIfNoResourceRequest;
+            else
+                return null;
+        }
+    }
+
+
+    #endregion
 
 
 
@@ -53,16 +248,19 @@ public class DelayedAsset : ISerializationCallbackReceiver
 
 
     /// <summary>
-    /// Loads the original asset.
+    /// Loads the original asset. Does not attempt to load it again if it was already loaded.
+    /// To unload it do not use <see cref="Resources.UnloadAsset(UnityEngine.Object)"/>, use <see cref="Unload"/> instead.
     /// </summary>
     /// <returns>The loaded asset, or null if it wasn't found or hadn't been assigned.</returns>
 
     public UnityEngine.Object Load()
     {
-        if (string.IsNullOrEmpty(assetRelativePath))
-            return null;
+        if (loadedAsset == null  &&  !string.IsNullOrEmpty(assetRelativePath))
+        {
+            loadedAsset = Resources.Load(assetRelativePath, assetType);
+        }
 
-        return Resources.Load(assetRelativePath, assetType);
+        return GetOriginalAsset(loadedAsset);
     }
 
 
@@ -73,16 +271,91 @@ public class DelayedAsset : ISerializationCallbackReceiver
 
 
     /// <summary>
-    /// Asynchronously loads the original asset.
+    /// Asynchronously loads the original asset. Does not attempt to load it again if it was already loaded.
+    /// To unload it do not use <see cref="Resources.UnloadAsset(UnityEngine.Object)"/>, use <see cref="Unload"/> instead.
     /// </summary>
-    /// <returns>A <see cref="ResourceRequest"/> object, from which the asset can be retrieved once the operation is completed. Will be null if the original asset couldn't be found, or hadn't been assigned.</returns>
+    /// <returns>An <see cref="AsyncLoadRequest"/> object, from which the asset can be retrieved once the operation is completed. Will be null if the original asset couldn't be found, or hadn't been assigned.</returns>
 
-    public ResourceRequest LoadAsync()
+    public AsyncLoadRequest LoadAsync()
     {
-        if (string.IsNullOrEmpty(assetRelativePath))
-            return null;
+        if (asyncLoadRequest == null)
+        {
+            if (loadedAsset != null)
+            {
+                asyncLoadRequest = new AsyncLoadRequest(loadedAsset, out asyncLoadedAssetGetter);
+            }
+            else if (!string.IsNullOrEmpty(assetRelativePath))
+            {
+                ResourceRequest resourceRequest = Resources.LoadAsync(assetRelativePath, assetType);
+                asyncLoadRequest = new AsyncLoadRequest(resourceRequest, out asyncLoadedAssetGetter);
+            }
+        }
 
-        return Resources.LoadAsync(assetRelativePath, assetType);
+        return asyncLoadRequest;
+    }
+
+
+
+
+
+
+
+
+    /// <summary>
+    /// Returns the original asset from the specified loaded asset, checking if the loaded asset is a <see cref="DelayedAssetProxy"/> instance.
+    /// </summary>
+    /// <param name="loadedAsset">The loaded asset.</param>
+    /// <returns>The original asset.</returns>
+
+    static UnityEngine.Object GetOriginalAsset(UnityEngine.Object loadedAsset)
+    {
+        return (loadedAsset is DelayedAssetProxy)  ?  ((DelayedAssetProxy)loadedAsset).Asset  :  loadedAsset;
+    }
+
+
+    #endregion
+
+
+
+
+
+
+
+
+    #region Asset unloading methods
+
+
+    /// <summary>
+    /// <para>Unloads the original asset if it's currently loaded.</para>
+    /// <para>Must not be called if there's an unfinished <see cref="AsyncLoadRequest"/> operation (generated from a previous call to <see cref="LoadAsync"/>).</para>
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown if there's an unfinished <see cref="AsyncLoadRequest"/> operation when this method is called.</exception>
+
+    public void Unload()
+    {
+        if (asyncLoadRequest != null  &&  !asyncLoadRequest.IsDone)
+            throw new InvalidOperationException("Called DelayedAsset.Unload() when there was an AsyncLoadRequest operation in progress");
+
+
+        if (loadedAsset != null)
+        {
+            // If the original asset is inside a proxy, unload it. Only if not in the editor, since otherwise it won't allow to load the asset again:
+            #if !UNITY_EDITOR
+            {
+                var originalAsset = GetOriginalAsset(loadedAsset);
+                if (originalAsset != null  &&  originalAsset != loadedAsset)
+                    Resources.UnloadAsset(originalAsset);
+            }
+            #endif
+
+
+            // Unload the loaded asset:
+            Resources.UnloadAsset(loadedAsset);
+        }
+        
+        loadedAsset            = null;
+        asyncLoadRequest       = null;
+        asyncLoadedAssetGetter = null;
     }
 
 

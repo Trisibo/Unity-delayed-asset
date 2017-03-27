@@ -27,6 +27,15 @@ using System.Reflection;
 [CustomPropertyDrawer(typeof(DelayedAsset))]
 public class DelayedAssetDrawer : PropertyDrawer
 {
+    bool isDraggingValidProxy;
+
+
+
+
+
+
+
+
     /// <summary>
     /// <see cref="PropertyDrawer.OnGUI(Rect, SerializedProperty, GUIContent)"/> implementation.
     /// </summary>
@@ -43,6 +52,22 @@ public class DelayedAssetDrawer : PropertyDrawer
         Type desiredType = typeAttribute != null  ?  typeAttribute.Type  :  typeof(UnityEngine.Object);
 
 
+        // If a DelayedAssetProxy is being dragged into the slot, and the type of the referenced asset matches the desired type, allow to set it:
+        if (Event.current.type == EventType.DragUpdated)
+        {
+            UnityEngine.Object draggedObject = DragAndDrop.objectReferences.Length == 0  ?  null  :  DragAndDrop.objectReferences[0];
+            isDraggingValidProxy = draggedObject is DelayedAssetProxy  &&  ((DelayedAssetProxy)draggedObject).Asset != null  &&  desiredType.IsAssignableFrom(((DelayedAssetProxy)draggedObject).Asset.GetType())  &&  position.Contains(Event.current.mousePosition);
+        }
+        else if (Event.current.type == EventType.DragExited)
+        {
+            isDraggingValidProxy = false;
+        }
+
+        
+        if (isDraggingValidProxy)
+            desiredType = typeof(DelayedAssetProxy);
+        
+        
         // Begin the property:
         EditorGUI.BeginProperty(position, label, property);
 
