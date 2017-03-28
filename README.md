@@ -49,7 +49,7 @@ Usage
     *   Select it, and, in the inspector window, drag the desired original asset to the `Asset` slot; the original asset can be inside any folder of the project.
     *   Drag the `DelayedAssetProxy` file to the desired `DelayedAsset` slot, just as if it was the original asset. The slot will accept the `DelayedAssetProxy`, but only if its asset type coincides with the original asset (see previous section about `DelayedAssetType`). For example, this would accept both assets of type `Texture2D` inside a "Resources" folder, and assets of type `DelayedAssetProxy` inside a "Resources" folder with a `Texture2D` assigned which is inside any project folder:
 
-        public [DelayedAssetType(typeof(Texture2D))] DelayedAsset texture;
+            public [DelayedAssetType(typeof(Texture2D))] DelayedAsset texture;
     
     To avoid mistakes, it will be automatically detected if the asset isn't inside a "Resources" folder and it won't be possible to assign it; however, the check cannot be performed if an asset that was previously assigned is moved outside a "Resources" folder.
 
