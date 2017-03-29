@@ -1,6 +1,7 @@
 **Important update note**
 
-New versions of the plugin added the `DelayedAssetProxy` class, which makes it possible to use assets that aren't inside a Resources folder. To make things as transparent and easy as possible, a breaking change was required: **to unload the original assets from memory, do NOT use `Resources.Unload`, use `DelayedAsset.Unload` instead**.
+New versions of the plugin added the `DelayedAssetProxy` class, which makes it possible to use assets that aren't inside a Resources folder. To make things as transparent and easy as possible, a breaking change was required: **to unload the original assets from memory, do NOT use `Resources.UnloadAsset`, use `DelayedAsset.Unload` instead**.
+
 
 
 Unity Delayed Asset

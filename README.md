@@ -1,6 +1,12 @@
 **Important update note**
 
-New versions of the plugin added the `DelayedAssetProxy` class, which makes it possible to use assets that aren't inside a Resources folder. To make things as transparent and easy as possible, a breaking change was required: **to unload the original assets from memory, do NOT use `Resources.Unload`, use `DelayedAsset.Unload` instead**.
+New versions of the plugin added the `DelayedAssetProxy` class, which makes it possible to use assets that aren't inside a Resources folder. To make things as transparent and easy as possible, a breaking change was required: **to unload the original assets from memory, do NOT use `Resources.UnloadAsset`, use `DelayedAsset.Unload` instead**.
+
+
+**How to add to a Unity project**
+
+The easiest way is to download the file "Delayed asset.unitypackage" to your computer. Then open the project in Unity and either double-click the downloaded package file, or open Unity's "Assets" menu, click the option "Import Package -> Custom Package", and select the downloaded package file; then press the "Import" button.
+
 
 
 Unity Delayed Asset
