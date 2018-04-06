@@ -1,5 +1,5 @@
 ﻿//
-// Copyright (C) 2017 Trinidad Sibajas Bodoque
+// Copyright (C) 2018 Trinidad Sibajas Bodoque
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,21 +21,24 @@
 
 using UnityEngine;
 
-/// <summary>
-/// Makes it possible to use assets from any folder on a <see cref="DelayedAsset"/>,
-/// assigning the original asset to the <see cref="DelayedAssetProxy"/>, which must be inside a "Resources" folder.
-/// </summary>
-
-[CreateAssetMenu]
-public class DelayedAssetProxy : ScriptableObject
+namespace Trisibo
 {
-    // The original asset, which can be inside any folder:
-    [SerializeField] UnityEngine.Object asset;
+    /// <summary>
+    /// Makes it possible to use assets from any folder on a <see cref="DelayedAsset"/>,
+    /// assigning the original asset to the <see cref="DelayedAssetProxy"/>, which must be inside a "Resources" folder.
+    /// </summary>
 
-
-    /// <summary>The original asset.</summary>
-    public UnityEngine.Object Asset
+    [CreateAssetMenu]
+    public class DelayedAssetProxy : ScriptableObject
     {
-        get { return asset; }
+        // The original asset, which can be inside any folder:
+        [SerializeField] UnityEngine.Object asset;
+
+
+        /// <summary>The original asset.</summary>
+        public UnityEngine.Object Asset
+        {
+            get { return asset; }
+        }
     }
 }

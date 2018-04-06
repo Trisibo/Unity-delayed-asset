@@ -1,5 +1,5 @@
 ﻿//
-// Copyright (C) 2017 Trinidad Sibajas Bodoque
+// Copyright (C) 2018 Trinidad Sibajas Bodoque
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,20 +22,23 @@
 using UnityEngine;
 using System;
 
-/// <summary>
-/// Allows to specify the wrapped type for a <see cref="DelayedAsset"/>.
-/// </summary>
-
-[AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
-public sealed class DelayedAssetTypeAttribute : PropertyAttribute
+namespace Trisibo
 {
-    public readonly Type Type;
+    /// <summary>
+    /// Allows to specify the wrapped type for a <see cref="DelayedAsset"/>.
+    /// </summary>
 
-    public DelayedAssetTypeAttribute(Type type)
+    [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+    public sealed class DelayedAssetTypeAttribute : PropertyAttribute
     {
-        if (!typeof(UnityEngine.Object).IsAssignableFrom(type))
-            throw new ArgumentException("The type argument for a DelayedAssetTypeAttribute must be derived from Unity.Object");
+        public readonly Type Type;
 
-        this.Type = type;
+        public DelayedAssetTypeAttribute(Type type)
+        {
+            if (!typeof(UnityEngine.Object).IsAssignableFrom(type))
+                throw new ArgumentException("The type argument for a DelayedAssetTypeAttribute must be derived from Unity.Object");
+
+            this.Type = type;
+        }
     }
 }
