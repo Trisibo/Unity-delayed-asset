@@ -1,6 +1,10 @@
-**Important update note**
+**Important update notes**
 
-New versions of the plugin added the `DelayedAssetProxy` class, which makes it possible to use assets that aren't inside a Resources folder. To make things as transparent and easy as possible, a breaking change was required: **to unload the original assets from memory, do NOT use `Resources.UnloadAsset`, use `DelayedAsset.Unload` instead**.
+*   Older versions of the plugin were installed in "Assets/Plugins/Delayed asset". The new versions are installed in "Assets/Trisibo/Delayed asset", so when updating the old folder and its contents must be removed.
+
+*   New versions of the plugin use the namespace "Trisibo", so remember to add it in your scripts.
+
+*   New versions of the plugin added the `DelayedAssetProxy` class, which makes it possible to use assets that aren't inside a Resources folder. To make things as transparent and easy as possible, a breaking change was required: **to unload the original assets from memory, do NOT use `Resources.UnloadAsset`, use `DelayedAsset.Unload` instead**.
 
 
 

@@ -21,6 +21,9 @@
 
 using UnityEngine;
 using System;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Trisibo
 {
@@ -331,9 +334,10 @@ namespace Trisibo
         /// <para>Unloads the original asset if it's currently loaded.</para>
         /// <para>Must not be called if there's an unfinished <see cref="AsyncLoadRequest"/> operation (generated from a previous call to <see cref="LoadAsync"/>).</para>
         /// </summary>
+        /// <param name="forceUnloadAllUnusedAssetsIfAssetNotUnloadable">If the original asset is of a type that cannot be directly unloaded by Unity (<see cref="Component"/>, <see cref="GameObject"/>, or <see cref="AssetBundle"/>), force a call to <see cref="Resources.UnloadUnusedAssets"/> instead. Use it with care, since it may be slow.</param>
         /// <exception cref="InvalidOperationException">Thrown if there's an unfinished <see cref="AsyncLoadRequest"/> operation when this method is called.</exception>
 
-        public void Unload()
+        public void Unload(bool forceUnloadAllUnusedAssetsIfAssetNotUnloadable = false)
         {
             if (asyncLoadRequest != null  &&  !asyncLoadRequest.IsDone)
                 throw new InvalidOperationException("Called DelayedAsset.Unload() when there was an AsyncLoadRequest operation in progress");
@@ -346,18 +350,56 @@ namespace Trisibo
                 {
                     var originalAsset = GetOriginalAsset(loadedAsset);
                     if (originalAsset != null  &&  originalAsset != loadedAsset)
-                        Resources.UnloadAsset(originalAsset);
+                    {
+                        if (CanBeDirectlyUnloaded(originalAsset))
+                        {
+                            Resources.UnloadAsset(originalAsset);
+                        }
+                        else if (forceUnloadAllUnusedAssetsIfAssetNotUnloadable)
+                        {
+                            originalAsset = null;
+                            Resources.UnloadUnusedAssets();
+                        }
+                    }
                 }
                 #endif
 
 
                 // Unload the loaded asset:
-                Resources.UnloadAsset(loadedAsset);
+                if (CanBeDirectlyUnloaded(loadedAsset))
+                {
+                    Resources.UnloadAsset(loadedAsset);
+                }
+                else if (forceUnloadAllUnusedAssetsIfAssetNotUnloadable)
+                {
+                    loadedAsset = null;
+                    Resources.UnloadUnusedAssets();
+                }
             }
-        
+
             loadedAsset            = null;
             asyncLoadRequest       = null;
             asyncLoadedAssetGetter = null;
+        }
+
+
+
+
+
+
+
+
+        /// <summary>
+        /// Checks whether the specified asset can be directly unloaded with <see cref="Resources.UnloadAsset(UnityEngine.Object)"/>.
+        /// Some assets can't (<see cref="Component"/>, <see cref="GameObject"/>, and <see cref="AssetBundle"/>).
+        /// </summary>
+        /// <param name="asset">The asset to check.</param>
+        /// <returns>Whether the specified asset can be directly unloaded with <see cref="Resources.UnloadAsset(UnityEngine.Object)"/>.</returns>
+
+        static bool CanBeDirectlyUnloaded(UnityEngine.Object asset)
+        {
+            Type assetType = asset.GetType();
+            return !typeof(Component).IsAssignableFrom(assetType)  &&  !typeof(GameObject).IsAssignableFrom(assetType)  &&  !typeof(AssetBundle).IsAssignableFrom(assetType);
         }
 
 
@@ -384,12 +426,14 @@ namespace Trisibo
                 assetRelativePath = null;
                 assetTypeString   = null;
 
-                if (asset != null)
+                if ((object)asset != null)  //-> We cast to object because in some situations the asset instance may be some kind of "special" one that Unity considers null.
                 {
                     string errorTextPart = null;
 
+                    string assetAbsolutePath = AssetDatabase.GetAssetPath(asset.GetInstanceID());
+
                     assetType         = asset.GetType();
-                    assetRelativePath = GetRelativeAssetPath(UnityEditor.AssetDatabase.GetAssetPath(asset));
+                    assetRelativePath = GetRelativeAssetPath(assetAbsolutePath);
 
                     if (assetRelativePath == null)
                     {
@@ -402,7 +446,7 @@ namespace Trisibo
                         if (otherAsset != null)
                         {
                             // Error: there's another asset with the same path (could have a different extension, or be in a different "Resources" folder):
-                            errorTextPart = "doesn't have a unique type and path relative to a \"Resources\" folder, see the asset \"" + UnityEditor.AssetDatabase.GetAssetPath(otherAsset) + "\".";
+                            errorTextPart = "doesn't have a unique type and path relative to a \"Resources\" folder, see the asset \"" + AssetDatabase.GetAssetPath(otherAsset) + "\".";
                             assetRelativePath = null;
                         }
                     }
@@ -411,7 +455,7 @@ namespace Trisibo
                     // Check if there was some error; if not, set the rest of the data:
                     if (assetRelativePath == null)
                     {
-                        Debug.LogError("The asset \"" + UnityEditor.AssetDatabase.GetAssetPath(asset) + "\", referenced by a DelayedAsset object, " + errorTextPart);
+                        Debug.LogError("The asset \"" + assetAbsolutePath + "\", referenced by a DelayedAsset object, " + errorTextPart);
                     }
                     else
                     {
