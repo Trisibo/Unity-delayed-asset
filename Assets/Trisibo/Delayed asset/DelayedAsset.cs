@@ -426,7 +426,7 @@ namespace Trisibo
                 assetRelativePath = null;
                 assetTypeString   = null;
 
-                if ((object)asset != null)  //-> We cast to object because in some situations the asset instance may be some kind of "special" one that Unity considers null.
+                if ((object)asset != null  &&  asset.GetInstanceID() != 0)  //-> We cast to object because in some situations the asset instance may be some kind of "special" one that Unity considers null.
                 {
                     string errorTextPart = null;
 
