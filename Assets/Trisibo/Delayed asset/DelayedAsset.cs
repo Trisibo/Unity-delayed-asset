@@ -54,7 +54,7 @@ namespace Trisibo
         // The asset once loaded at runtime:
         UnityEngine.Object _loadedAsset;
     
-        UnityEngine.Object loadedAsset
+        UnityEngine.Object LoadedAsset
         {
             get
             {
@@ -260,12 +260,12 @@ namespace Trisibo
 
         public UnityEngine.Object Load()
         {
-            if (loadedAsset == null  &&  !string.IsNullOrEmpty(assetRelativePath))
+            if (LoadedAsset == null  &&  !string.IsNullOrEmpty(assetRelativePath))
             {
-                loadedAsset = Resources.Load(assetRelativePath, assetType);
+                LoadedAsset = Resources.Load(assetRelativePath, assetType);
             }
 
-            return GetOriginalAsset(loadedAsset);
+            return GetOriginalAsset(LoadedAsset);
         }
 
 
@@ -285,9 +285,9 @@ namespace Trisibo
         {
             if (asyncLoadRequest == null)
             {
-                if (loadedAsset != null)
+                if (LoadedAsset != null)
                 {
-                    asyncLoadRequest = new AsyncLoadRequest(loadedAsset, out asyncLoadedAssetGetter);
+                    asyncLoadRequest = new AsyncLoadRequest(LoadedAsset, out asyncLoadedAssetGetter);
                 }
                 else if (!string.IsNullOrEmpty(assetRelativePath))
                 {
@@ -343,7 +343,7 @@ namespace Trisibo
                 throw new InvalidOperationException("Called DelayedAsset.Unload() when there was an AsyncLoadRequest operation in progress");
 
 
-            if (loadedAsset != null)
+            if (LoadedAsset != null)
             {
                 // If the original asset is inside a proxy, unload it. Only if not in the editor, since otherwise it won't allow to load the asset again:
                 #if !UNITY_EDITOR
@@ -366,18 +366,18 @@ namespace Trisibo
 
 
                 // Unload the loaded asset:
-                if (CanBeDirectlyUnloaded(loadedAsset))
+                if (CanBeDirectlyUnloaded(LoadedAsset))
                 {
-                    Resources.UnloadAsset(loadedAsset);
+                    Resources.UnloadAsset(LoadedAsset);
                 }
                 else if (forceUnloadAllUnusedAssetsIfAssetNotUnloadable)
                 {
-                    loadedAsset = null;
+                    LoadedAsset = null;
                     Resources.UnloadUnusedAssets();
                 }
             }
 
-            loadedAsset            = null;
+            LoadedAsset            = null;
             asyncLoadRequest       = null;
             asyncLoadedAssetGetter = null;
         }
@@ -479,6 +479,7 @@ namespace Trisibo
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
+            LoadedAsset = null;
             assetType = string.IsNullOrEmpty(assetTypeString)  ?  null  :  Type.GetType(assetTypeString);
         }
 
