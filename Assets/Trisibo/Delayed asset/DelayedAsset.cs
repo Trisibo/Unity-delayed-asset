@@ -348,8 +348,8 @@ namespace Trisibo
                 // If the original asset is inside a proxy, unload it. Only if not in the editor, since otherwise it won't allow to load the asset again:
                 #if !UNITY_EDITOR
                 {
-                    var originalAsset = GetOriginalAsset(loadedAsset);
-                    if (originalAsset != null  &&  originalAsset != loadedAsset)
+                    var originalAsset = GetOriginalAsset(LoadedAsset);
+                    if (originalAsset != null  &&  originalAsset != LoadedAsset)
                     {
                         if (CanBeDirectlyUnloaded(originalAsset))
                         {
