@@ -44,6 +44,18 @@ namespace Trisibo
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            // We don't handle multiobject:
+            if (property.serializedObject.isEditingMultipleObjects)
+            {
+                EditorGUI.showMixedValue = true;
+                label.text = GetFormattedLabel(label.text);
+                EditorGUI.SelectableLabel(EditorGUI.PrefixLabel(position, label), "");
+                EditorGUI.showMixedValue = false;
+
+                return;
+            }
+
+
             // Check if the field has a type attribute, and get the type:
             int dotIndex = property.propertyPath.IndexOf('.');
             string fieldName = dotIndex == -1  ?  property.propertyPath  :  property.propertyPath.Substring(0, dotIndex);
@@ -80,7 +92,7 @@ namespace Trisibo
 
             // Draw the property:
             SerializedProperty assetProperty = property.FindPropertyRelative("asset");
-            label.text = "{" + label.text + "}";
+            label.text = GetFormattedLabel(label.text);
 
             assetProperty.objectReferenceValue = EditorGUI.ObjectField(position, label, assetProperty.objectReferenceValue, desiredType, false);
 
@@ -116,6 +128,24 @@ namespace Trisibo
 
             // End of the property:
             EditorGUI.EndProperty();
+        }
+
+
+
+
+
+
+
+
+        /// <summary>
+        /// Gets a formatted label for the field.
+        /// </summary>
+        /// <param name="originalLabel">The original label.</param>
+        /// <returns>The formatted label.</returns>
+
+        static string GetFormattedLabel(string originalLabel)
+        {
+            return "{" + originalLabel + "}";
         }
     }
 }
