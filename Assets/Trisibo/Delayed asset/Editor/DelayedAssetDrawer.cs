@@ -44,21 +44,10 @@ namespace Trisibo
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            // We don't handle multiobject:
-            if (property.serializedObject.isEditingMultipleObjects)
-            {
-                EditorGUI.showMixedValue = true;
-                label.text = GetFormattedLabel(label.text);
-                EditorGUI.SelectableLabel(EditorGUI.PrefixLabel(position, label), "");
-                EditorGUI.showMixedValue = false;
-
-                return;
-            }
-
-
             // Check if the field has a type attribute, and get the type:
-            int dotIndex = property.propertyPath.IndexOf('.');
-            string fieldName = dotIndex == -1  ?  property.propertyPath  :  property.propertyPath.Substring(0, dotIndex);
+            string propertyPath = property.propertyPath;
+            int dotIndex = propertyPath.IndexOf('.');
+            string fieldName = dotIndex == -1  ?  propertyPath  :  propertyPath.Substring(0, dotIndex);
 
             FieldInfo fieldInfo = property.serializedObject.targetObject.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             DelayedAssetTypeAttribute typeAttribute = (DelayedAssetTypeAttribute)Attribute.GetCustomAttribute(fieldInfo, typeof(DelayedAssetTypeAttribute));
@@ -86,19 +75,22 @@ namespace Trisibo
             EditorGUI.BeginProperty(position, label, property);
 
 
-            // Check for changes in the property:
-            EditorGUI.BeginChangeCheck();
-
-
             // Draw the property:
             SerializedProperty assetProperty = property.FindPropertyRelative("asset");
             label.text = GetFormattedLabel(label.text);
 
-            assetProperty.objectReferenceValue = EditorGUI.ObjectField(position, label, assetProperty.objectReferenceValue, desiredType, false);
+            EditorGUI.BeginChangeCheck();
+            EditorGUI.showMixedValue = property.hasMultipleDifferentValues;
+            var newAsset = EditorGUI.ObjectField(position, label, assetProperty.objectReferenceValue, desiredType, false);
+            EditorGUI.showMixedValue = false;
+            
+            bool hasChanged = EditorGUI.EndChangeCheck();
+            if (hasChanged)
+                assetProperty.objectReferenceValue = newAsset;
 
 
             // If an object has been assigned, check if there is some problem with it:
-            if (EditorGUI.EndChangeCheck()  &&  assetProperty.objectReferenceValue != null)
+            if (hasChanged  &&  assetProperty.objectReferenceValue != null)
             {
                 string errorString = null;
                 string assetRelativePath = DelayedAsset.GetRelativeAssetPath(AssetDatabase.GetAssetPath(assetProperty.objectReferenceValue));
