@@ -22,7 +22,6 @@
 using UnityEngine;
 using UnityEditor;
 using System;
-using System.Reflection;
 
 namespace Trisibo
 {
@@ -45,13 +44,7 @@ namespace Trisibo
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             // Check if the field has a type attribute, and get the type:
-            string propertyPath = property.propertyPath;
-            int dotIndex = propertyPath.IndexOf('.');
-            string fieldName = dotIndex == -1  ?  propertyPath  :  propertyPath.Substring(0, dotIndex);
-
-            FieldInfo fieldInfo = property.serializedObject.targetObject.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             DelayedAssetTypeAttribute typeAttribute = (DelayedAssetTypeAttribute)Attribute.GetCustomAttribute(fieldInfo, typeof(DelayedAssetTypeAttribute));
-
             Type desiredType = typeAttribute != null  ?  typeAttribute.Type  :  typeof(UnityEngine.Object);
 
 
