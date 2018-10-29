@@ -473,8 +473,10 @@ namespace Trisibo
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
-            LoadedAsset = null;
-            _assetType = null;
+            LoadedAsset            = null;
+            _assetType             = null;
+            asyncLoadRequest       = null;
+            asyncLoadedAssetGetter = null;
         }
 
 
