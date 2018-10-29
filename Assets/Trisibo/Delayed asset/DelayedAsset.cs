@@ -433,7 +433,7 @@ namespace Trisibo
                     assetType         = asset.GetType();
                     assetRelativePath = GetResourcesRelativeAssetPath(assetAbsolutePath);
                     
-                    string error = CheckForErrors(asset, assetRelativePath, assetType);
+                    string error = CheckForErrors(asset, assetRelativePath);
                     if (error != null)
                     {
                         assetRelativePath = null;
@@ -535,14 +535,13 @@ namespace Trisibo
         /// </summary>
         /// <param name="asset">The asset.</param>
         /// <param name="resourcesRelativePath">The path relative to a resources folder.</param>
-        /// <param name="assetType">The asset type.</param>
         /// <returns>One of the assets found, null if none.</returns>
 
-        public static UnityEngine.Object FindAssetWithSameTypeAndRelativePath(UnityEngine.Object asset, string resourcesRelativePath, Type assetType)
+        public static UnityEngine.Object FindAssetWithSameTypeAndRelativePath(UnityEngine.Object asset, string resourcesRelativePath)
         {
             int assetId = asset.GetInstanceID();
 
-            UnityEngine.Object[] allAssets = Resources.LoadAll(resourcesRelativePath, assetType);
+            UnityEngine.Object[] allAssets = Resources.LoadAll(resourcesRelativePath, asset.GetType());
             for (int i = 0;  i < allAssets.Length;  i++)
             {
                 if (allAssets[i].GetInstanceID() != assetId)
@@ -565,11 +564,10 @@ namespace Trisibo
         /// </summary>
         /// <param name="asset">The asset.</param>
         /// <param name="resourcesRelativePath">The path relative to a resources folder, if any.</param>
-        /// <param name="assetType">The asset type.</param>
         /// <returns>The error text for the first error found, null if there were no errors.</returns>
 
 
-        public static string CheckForErrors(UnityEngine.Object asset, string resourcesRelativePath, Type assetType)
+        public static string CheckForErrors(UnityEngine.Object asset, string resourcesRelativePath)
         {
             string error = null;
 
@@ -579,7 +577,7 @@ namespace Trisibo
             }
             else
             {
-                UnityEngine.Object otherAsset = FindAssetWithSameTypeAndRelativePath(asset, resourcesRelativePath, assetType);
+                UnityEngine.Object otherAsset = FindAssetWithSameTypeAndRelativePath(asset, resourcesRelativePath);
                 if (otherAsset != null)
                 {
                     error = "The asset \"" + AssetDatabase.GetAssetPath(asset.GetInstanceID()) + "\" doesn't have a unique type and path relative to a \"Resources\" folder, this other asset has the same ones: \"" + AssetDatabase.GetAssetPath(otherAsset) + "\".";

@@ -85,7 +85,7 @@ namespace Trisibo
             // If an object has been assigned, check if there is some problem with it:
             if (hasChanged  &&  newAsset != null)
             {
-                string error = DelayedAsset.CheckForErrors(newAsset, DelayedAsset.GetResourcesRelativeAssetPath(AssetDatabase.GetAssetPath(newAsset)), desiredType);
+                string error = DelayedAsset.CheckForErrors(newAsset, DelayedAsset.GetResourcesRelativeAssetPath(AssetDatabase.GetAssetPath(newAsset)));
                 if (error != null)
                 {
                     assetProperty.objectReferenceValue = null;
