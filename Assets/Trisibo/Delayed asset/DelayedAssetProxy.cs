@@ -28,7 +28,7 @@ namespace Trisibo
     /// assigning the original asset to the <see cref="DelayedAssetProxy"/>, which must be inside a "Resources" folder.
     /// </summary>
 
-    [CreateAssetMenu]
+    [CreateAssetMenu(menuName = "Trisibo/Delayed Asset/Delayed Asset Proxy")]
     public class DelayedAssetProxy : ScriptableObject
     {
         // The original asset, which can be inside any folder:
