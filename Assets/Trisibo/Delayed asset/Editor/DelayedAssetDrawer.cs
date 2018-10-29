@@ -66,6 +66,7 @@ namespace Trisibo
         
             // Begin the property:
             EditorGUI.BeginProperty(position, label, property);
+            EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);
 
 
             // Draw the property:
@@ -96,6 +97,7 @@ namespace Trisibo
 
 
             // End of the property:
+            EditorGUI.EndDisabledGroup();
             EditorGUI.EndProperty();
         }
 

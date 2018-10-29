@@ -19,26 +19,44 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using UnityEngine;
+using UnityEditor;
 
 namespace Trisibo
 {
-    /// <summary>
-    /// Makes it possible to use assets from any folder on a <see cref="DelayedAsset"/>,
-    /// assigning the original asset to the <see cref="DelayedAssetProxy"/>, which must be inside a "Resources" folder.
-    /// </summary>
-
-    [CreateAssetMenu(menuName = "Trisibo/Delayed Asset/Delayed Asset Proxy")]
-    public class DelayedAssetProxy : ScriptableObject
+    [CustomEditor(typeof(DelayedAssetProxy))]
+    public class DelayedAssetProxyEditor : Editor
     {
-        // The original asset, which can be inside any folder:
-        [SerializeField, HideInInspector] UnityEngine.Object asset;
+        SerializedProperty assetProp;
 
 
-        /// <summary>The original asset.</summary>
-        public UnityEngine.Object Asset
+
+
+        /// <summary>
+        /// Implementation of Editor.OnEnable().
+        /// </summary>
+
+        void OnEnable()
         {
-            get { return asset; }
+            if (assetProp == null)
+                assetProp = serializedObject.FindProperty("asset");
+        }
+
+
+
+
+        /// <summary>
+        /// Implementation of <see cref="Editor.OnInspectorGUI"/>.
+        /// </summary>
+
+        public override void OnInspectorGUI()
+        {
+            serializedObject.Update();
+            
+            EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);
+            EditorGUILayout.PropertyField(assetProp);
+            EditorGUI.EndDisabledGroup();
+            
+            serializedObject.ApplyModifiedProperties();
         }
     }
 }

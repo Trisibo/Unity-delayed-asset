@@ -35,19 +35,33 @@ namespace Trisibo
     [Serializable]
     public class DelayedAsset : ISerializationCallbackReceiver
     {
-        #region Data
+        #region Serialized data
 
 
         // The asset, only available on the editor to be able to set it from the inspector:
         #if UNITY_EDITOR
-        [SerializeField] UnityEngine.Object asset;
+        [SerializeField, HideInInspector] UnityEngine.Object asset;
         #endif
 
 
         // The data needed to load the asset:
-        [SerializeField] string assetRelativePath;
-        [SerializeField] string assetTypeString;
+        [SerializeField, HideInInspector] string assetRelativePath;
+        [SerializeField, HideInInspector] string assetTypeString;
 
+
+        #endregion
+
+
+
+
+
+
+
+
+        #region Runtime data
+
+
+        // The asset type:
         Type assetType;
 
 
@@ -260,6 +274,13 @@ namespace Trisibo
 
         public UnityEngine.Object Load()
         {
+            #if UNITY_EDITOR
+            {
+                UpdateRuntimeSerializedData();
+            }
+            #endif
+
+            
             if (LoadedAsset == null  &&  !string.IsNullOrEmpty(assetRelativePath))
             {
                 LoadedAsset = Resources.Load(assetRelativePath, assetType);
@@ -283,6 +304,13 @@ namespace Trisibo
 
         public AsyncLoadRequest LoadAsync()
         {
+            #if UNITY_EDITOR
+            {
+                UpdateRuntimeSerializedData();
+            }
+            #endif
+
+            
             if (asyncLoadRequest == null)
             {
                 if (LoadedAsset != null)
@@ -423,28 +451,7 @@ namespace Trisibo
         {
             #if UNITY_EDITOR
             {
-                assetRelativePath = null;
-                assetTypeString   = null;
-
-                if ((object)asset != null  &&  asset.GetInstanceID() != 0)  //-> We cast to object because in some situations the asset instance may be some kind of "special" one that Unity considers null.
-                {
-                    string assetAbsolutePath = AssetDatabase.GetAssetPath(asset.GetInstanceID());
-
-                    assetType         = asset.GetType();
-                    assetRelativePath = GetResourcesRelativeAssetPath(assetAbsolutePath);
-                    
-                    string error = CheckForErrors(asset, assetRelativePath);
-                    if (error != null)
-                    {
-                        assetRelativePath = null;
-                        assetTypeString   = null;
-                        Debug.LogError("<b>Delayed asset error:</b> " + error);
-                    }
-                    else
-                    {
-                        assetTypeString = assetType.AssemblyQualifiedName;
-                    }
-                }
+                UpdateRuntimeSerializedData();
             }
             #endif
         }
@@ -490,6 +497,44 @@ namespace Trisibo
             get
             {
                 return asset;
+            }
+        }
+
+
+
+
+
+
+
+
+        /// <summary>
+        /// <para>Only in editor.</para>
+        /// Updates the serialized data used at runtime, using the current assigned asset.
+        /// </summary>
+
+        void UpdateRuntimeSerializedData()
+        {
+            assetRelativePath = null;
+            assetTypeString   = null;
+
+            if ((object)asset != null  &&  asset.GetInstanceID() != 0)  //-> We cast to object because in some situations the asset instance may be some kind of "special" one that Unity considers null.
+            {
+                string assetAbsolutePath = AssetDatabase.GetAssetPath(asset.GetInstanceID());
+
+                assetType         = asset.GetType();
+                assetRelativePath = GetResourcesRelativeAssetPath(assetAbsolutePath);
+                    
+                string error = CheckForErrors(asset, assetRelativePath);
+                if (error != null)
+                {
+                    assetRelativePath = null;
+                    assetTypeString   = null;
+                    Debug.LogError("<b>Delayed asset error:</b> " + error);
+                }
+                else
+                {
+                    assetTypeString = assetType.AssemblyQualifiedName;
+                }
             }
         }
 
