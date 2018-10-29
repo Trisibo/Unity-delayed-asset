@@ -33,7 +33,10 @@ namespace Trisibo
     /// </summary>
 
     [Serializable]
-    public class DelayedAsset : ISerializationCallbackReceiver
+    public class DelayedAsset
+        #if UNITY_EDITOR
+        : ISerializationCallbackReceiver
+        #endif
     {
         #region Serialized data
 
@@ -62,7 +65,11 @@ namespace Trisibo
 
 
         // The asset type:
-        Type assetType;
+        Type _assetType;
+        Type AssetType
+        {
+            get { return _assetType  ??  (_assetType = string.IsNullOrEmpty(assetTypeString)  ?  null  :  Type.GetType(assetTypeString)); }
+        }
 
 
         // The asset once loaded at runtime:
@@ -283,7 +290,7 @@ namespace Trisibo
             
             if (LoadedAsset == null  &&  !string.IsNullOrEmpty(assetRelativePath))
             {
-                LoadedAsset = Resources.Load(assetRelativePath, assetType);
+                LoadedAsset = Resources.Load(assetRelativePath, AssetType);
             }
 
             return GetOriginalAsset(LoadedAsset);
@@ -319,7 +326,7 @@ namespace Trisibo
                 }
                 else if (!string.IsNullOrEmpty(assetRelativePath))
                 {
-                    ResourceRequest resourceRequest = Resources.LoadAsync(assetRelativePath, assetType);
+                    ResourceRequest resourceRequest = Resources.LoadAsync(assetRelativePath, AssetType);
                     asyncLoadRequest = new AsyncLoadRequest(resourceRequest, out asyncLoadedAssetGetter);
                 }
             }
@@ -441,6 +448,7 @@ namespace Trisibo
 
 
         #region ISerializationCallbackReceiver implementation
+        #if UNITY_EDITOR
 
 
         /// <summary>
@@ -449,11 +457,7 @@ namespace Trisibo
 
         void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
-            #if UNITY_EDITOR
-            {
-                UpdateRuntimeSerializedData();
-            }
-            #endif
+            UpdateRuntimeSerializedData();
         }
 
 
@@ -470,10 +474,11 @@ namespace Trisibo
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
             LoadedAsset = null;
-            assetType = string.IsNullOrEmpty(assetTypeString)  ?  null  :  Type.GetType(assetTypeString);
+            _assetType = null;
         }
 
 
+        #endif
         #endregion
 
 
@@ -520,8 +525,6 @@ namespace Trisibo
             if ((object)asset != null  &&  asset.GetInstanceID() != 0)  //-> We cast to object because in some situations the asset instance may be some kind of "special" one that Unity considers null.
             {
                 string assetAbsolutePath = AssetDatabase.GetAssetPath(asset.GetInstanceID());
-
-                assetType         = asset.GetType();
                 assetRelativePath = GetResourcesRelativeAssetPath(assetAbsolutePath);
                     
                 string error = CheckForErrors(asset, assetRelativePath);
@@ -533,7 +536,7 @@ namespace Trisibo
                 }
                 else
                 {
-                    assetTypeString = assetType.AssemblyQualifiedName;
+                    assetTypeString = asset.GetType().AssemblyQualifiedName;
                 }
             }
         }
