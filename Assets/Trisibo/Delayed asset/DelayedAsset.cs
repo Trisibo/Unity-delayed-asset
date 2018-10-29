@@ -428,34 +428,17 @@ namespace Trisibo
 
                 if ((object)asset != null  &&  asset.GetInstanceID() != 0)  //-> We cast to object because in some situations the asset instance may be some kind of "special" one that Unity considers null.
                 {
-                    string errorTextPart = null;
-
                     string assetAbsolutePath = AssetDatabase.GetAssetPath(asset.GetInstanceID());
 
                     assetType         = asset.GetType();
-                    assetRelativePath = GetRelativeAssetPath(assetAbsolutePath);
-
-                    if (assetRelativePath == null)
+                    assetRelativePath = GetResourcesRelativeAssetPath(assetAbsolutePath);
+                    
+                    string error = CheckForErrors(asset, assetRelativePath, assetType);
+                    if (error != null)
                     {
-                        // Error: the asset is not inside a "Resources" folder:
-                        errorTextPart = "is not inside a \"Resources\" folder.";
-                    }
-                    else
-                    {
-                        UnityEngine.Object otherAsset = FindAssetWithSameTypeAndRelativePath(asset, assetRelativePath, assetType);
-                        if (otherAsset != null)
-                        {
-                            // Error: there's another asset with the same path (could have a different extension, or be in a different "Resources" folder):
-                            errorTextPart = "doesn't have a unique type and path relative to a \"Resources\" folder, see the asset \"" + AssetDatabase.GetAssetPath(otherAsset) + "\".";
-                            assetRelativePath = null;
-                        }
-                    }
-
-
-                    // Check if there was some error; if not, set the rest of the data:
-                    if (assetRelativePath == null)
-                    {
-                        Debug.LogError("The asset \"" + assetAbsolutePath + "\", referenced by a DelayedAsset object, " + errorTextPart);
+                        assetRelativePath = null;
+                        assetTypeString   = null;
+                        Debug.LogError("<b>Delayed asset error:</b> " + error);
                     }
                     else
                     {
@@ -498,7 +481,8 @@ namespace Trisibo
 
 
         /// <summary>
-        /// **ONLY IN THE EDITOR** The original asset object.
+        /// <para>Only in the editor.</para>
+        /// The original asset object.
         /// </summary>
 
         public UnityEngine.Object Editor_OriginalAsset
@@ -517,12 +501,13 @@ namespace Trisibo
 
 
         /// <summary>
+        /// <para>Only in the editor.</para>
         /// Retrieves the asset path relative to a resources folder.
         /// </summary>
         /// <param name="assetAbsolutePath">The absolute path of the asset.</param>
         /// <returns>The path relative to a resources folder, null if the asset is not inside a resources folder, either directly or inside a subfolder in the hierarchy.</returns>
 
-        public static string GetRelativeAssetPath(string assetAbsolutePath)
+        public static string GetResourcesRelativeAssetPath(string assetAbsolutePath)
         {
             const string resourcesPathString = "/Resources/";
 
@@ -545,28 +530,63 @@ namespace Trisibo
 
 
         /// <summary>
+        /// <para>Only in the editor.</para>
         /// Searches for any asset with the same path relative to a resources folder and the same type as the supplied asset.
         /// </summary>
-        /// <param name="originalAsset">The original asset instance.</param>
-        /// <param name="relativePath">The path relative to a resources folder.</param>
-        /// <param name="type">The type.</param>
+        /// <param name="asset">The asset.</param>
+        /// <param name="resourcesRelativePath">The path relative to a resources folder.</param>
+        /// <param name="assetType">The asset type.</param>
         /// <returns>One of the assets found, null if none.</returns>
 
-        public static UnityEngine.Object FindAssetWithSameTypeAndRelativePath(UnityEngine.Object originalAsset, string relativePath, Type type)
+        public static UnityEngine.Object FindAssetWithSameTypeAndRelativePath(UnityEngine.Object asset, string resourcesRelativePath, Type assetType)
         {
-            UnityEngine.Object foundAsset = null;
+            int assetId = asset.GetInstanceID();
 
-            UnityEngine.Object[] allAssets = Resources.LoadAll(relativePath, type);
+            UnityEngine.Object[] allAssets = Resources.LoadAll(resourcesRelativePath, assetType);
             for (int i = 0;  i < allAssets.Length;  i++)
             {
-                if (!allAssets[i].Equals(originalAsset))
+                if (allAssets[i].GetInstanceID() != assetId)
+                    return allAssets[i];
+            }
+
+            return null;
+        }
+
+
+
+
+
+
+
+
+        /// <summary>
+        /// <para>Only in the editor.</para>
+        /// Checks for errors in an assigned asset.
+        /// </summary>
+        /// <param name="asset">The asset.</param>
+        /// <param name="resourcesRelativePath">The path relative to a resources folder, if any.</param>
+        /// <param name="assetType">The asset type.</param>
+        /// <returns>The error text for the first error found, null if there were no errors.</returns>
+
+
+        public static string CheckForErrors(UnityEngine.Object asset, string resourcesRelativePath, Type assetType)
+        {
+            string error = null;
+
+            if (string.IsNullOrEmpty(resourcesRelativePath))
+            {
+                error = "The asset \"" + AssetDatabase.GetAssetPath(asset.GetInstanceID()) + "\" is not inside a \"Resources\" folder.";
+            }
+            else
+            {
+                UnityEngine.Object otherAsset = FindAssetWithSameTypeAndRelativePath(asset, resourcesRelativePath, assetType);
+                if (otherAsset != null)
                 {
-                    foundAsset = allAssets[i];
-                    break;
+                    error = "The asset \"" + AssetDatabase.GetAssetPath(asset.GetInstanceID()) + "\" doesn't have a unique type and path relative to a \"Resources\" folder, this other asset has the same ones: \"" + AssetDatabase.GetAssetPath(otherAsset) + "\".";
                 }
             }
 
-            return foundAsset;
+            return error;
         }
 
 
