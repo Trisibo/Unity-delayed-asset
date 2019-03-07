@@ -1,5 +1,5 @@
 ﻿//
-// Copyright (C) 2018 Trinidad Sibajas Bodoque
+// Copyright (C) 2018-2019 Trinidad Sibajas Bodoque
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -43,13 +43,13 @@ namespace Trisibo
 
         // The asset, only available on the editor to be able to set it from the inspector:
         #if UNITY_EDITOR
-        [SerializeField, HideInInspector] UnityEngine.Object asset;
+        [SerializeField, HideInInspector] UnityEngine.Object asset = null;
         #endif
 
 
         // The data needed to load the asset:
-        [SerializeField, HideInInspector] string assetRelativePath;
-        [SerializeField, HideInInspector] string assetTypeString;
+        [SerializeField, HideInInspector] string assetRelativePath = null;
+        [SerializeField, HideInInspector] string assetTypeString   = null;
 
 
         #endregion

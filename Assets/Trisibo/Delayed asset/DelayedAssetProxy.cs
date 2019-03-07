@@ -1,5 +1,5 @@
 ﻿//
-// Copyright (C) 2018 Trinidad Sibajas Bodoque
+// Copyright (C) 2018-2019 Trinidad Sibajas Bodoque
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ namespace Trisibo
     public class DelayedAssetProxy : ScriptableObject
     {
         // The original asset, which can be inside any folder:
-        [SerializeField, HideInInspector] UnityEngine.Object asset;
+        [SerializeField, HideInInspector] UnityEngine.Object asset = null;
 
 
         /// <summary>The original asset.</summary>
