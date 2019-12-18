@@ -1,5 +1,5 @@
 ﻿//
-// Copyright (C) 2017-2019 Trinidad Sibajas Bodoque
+// Copyright (C) 2017 Trinidad Sibajas Bodoque
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -50,6 +50,110 @@ namespace Trisibo
         // The data needed to load the asset:
         [SerializeField, HideInInspector] string assetRelativePath = null;
         [SerializeField, HideInInspector] string assetTypeString   = null;
+
+
+        #endregion
+
+
+
+
+
+
+
+
+        #region Overloaded operators
+
+
+        /// <summary>
+        /// "==" operator.
+        /// </summary>
+
+        public static bool operator ==(DelayedAsset a, DelayedAsset b)
+        {
+            if (ReferenceEquals(a, null))
+                return ReferenceEquals(b, null)  ||  string.IsNullOrEmpty(b.assetRelativePath);
+
+            if (ReferenceEquals(b, null))
+                return ReferenceEquals(a, null)  ||  string.IsNullOrEmpty(a.assetRelativePath);
+
+            if (a.Equals(b))
+                return true;
+
+            if (string.IsNullOrEmpty(a.assetRelativePath))
+                return string.IsNullOrEmpty(b.assetRelativePath);
+
+            return a.assetRelativePath.Equals(b.assetRelativePath, StringComparison.InvariantCulture)  &&  a.AssetType == b.AssetType;
+        }
+
+
+
+
+        
+        
+        
+        
+        /// <summary>
+        /// "!=" operator.
+        /// </summary>
+
+        public static bool operator !=(DelayedAsset a, DelayedAsset b)
+        {
+            return !(a == b);
+        }
+
+
+
+
+        
+        
+        
+        
+        /// <summary>
+        /// Inplicit bool operator.
+        /// </summary>
+
+        public static implicit operator bool(DelayedAsset a)
+        {
+            return !(a == null);
+        }
+
+
+        #endregion
+
+
+
+
+
+
+
+
+        #region Object methods overrides
+
+
+        /// <summary>
+        /// Implementation of <see cref="object.Equals(object)"/>.
+        /// </summary>
+
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj);
+        }
+
+
+
+
+
+
+
+
+        /// <summary>
+        /// Implementation of <see cref="object.Equals(object)"/>.
+        /// </summary>
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
 
 
         #endregion

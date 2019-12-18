@@ -1,3 +1,10 @@
+**Check out Unity's "Addressables" system first**
+
+The new "Addressable Asset System" from Unity is now the preferred way of loading assets on memory dynamically, built on top of Asset Bundles but easier to manage and use. Check it out before using this plugin if you need something more powerful or flexible.
+See https://blogs.unity3d.com/2019/07/15/addressable-asset-system/
+
+
+
 **Important update notes**
 
 *   Older versions of the plugin were installed in "Assets/Plugins/Delayed asset". The new versions are installed in "Assets/Trisibo/Delayed asset", so when updating the old folder and its contents must be removed.
@@ -115,7 +122,7 @@ Restrictions
 License
 -------
 
-Copyright (C) 2017-2019 Trinidad Sibajas Bodoque
+Copyright (C) 2017 Trinidad Sibajas Bodoque
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
