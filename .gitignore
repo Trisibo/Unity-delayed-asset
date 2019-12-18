@@ -35,6 +35,8 @@ sysinfo.txt
 *.meta
 /[Aa]ssets/[Tt]est/
 /UnityPackageManager
+/Logs/
+/Packages/
 
 # Test builds
 /Builds/
